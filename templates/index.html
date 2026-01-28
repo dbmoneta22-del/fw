@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Foto → Word OCR</title>
+<style>
+body{
+    background:#0f172a;
+    color:#e5e7eb;
+    font-family:system-ui;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+form{
+    background:#020617;
+    padding:30px;
+    border-radius:12px;
+    text-align:center;
+}
+button{
+    margin-top:15px;
+    padding:10px 20px;
+    background:#22c55e;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+<form method="POST" enctype="multipart/form-data">
+    <h2>Carica una foto</h2>
+    <input type="file" name="image" required>
+    <br>
+    <button type="submit">Trascrivi e scarica Word</button>
+</form>
+</body>
+</html>
