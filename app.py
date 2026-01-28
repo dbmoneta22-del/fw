@@ -5,9 +5,14 @@ import pytesseract
 import uuid
 import os
 import traceback
+import shutil
 
-# PATH TESSERACT SU RENDER
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+# === TROVA TESSERACT AUTOMATICAMENTE ===
+tesseract_path = shutil.which("tesseract")
+if not tesseract_path:
+    raise RuntimeError("❌ Tesseract non trovato nel sistema")
+
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 app = Flask(__name__)
 
@@ -23,14 +28,14 @@ def index():
             img_path = f"/tmp/{uuid.uuid4()}"
             file.save(img_path)
 
-            # Apertura e NORMALIZZAZIONE immagine
+            # Apertura e normalizzazione immagine
             img = Image.open(img_path)
-            img = img.convert("RGB")  # <-- QUESTO EVITA IL 500
+            img = img.convert("RGB")
 
             # OCR
             testo = pytesseract.image_to_string(img, lang="ita")
 
-            # Creazione Word
+            # Word
             doc = Document()
             doc.add_heading("Testo estratto dall'immagine", level=1)
             doc.add_paragraph(testo if testo.strip() else "[Nessun testo rilevato]")
@@ -40,13 +45,12 @@ def index():
 
             return send_file(out_path, as_attachment=True)
 
-        except Exception as e:
-            # LOG VERO (visibile nei log Render)
+        except Exception:
             print("🔥 ERRORE OCR 🔥")
             print(traceback.format_exc())
             return "Errore interno durante la trascrizione. Controlla i log.", 500
 
-    # PAGINA HTML INLINE
+    # HTML INLINE
     return """
     <!doctype html>
     <html lang="it">
