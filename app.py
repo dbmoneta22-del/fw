@@ -4,8 +4,9 @@ from PIL import Image
 import pytesseract
 import uuid
 import os
+import traceback
 
-# === PATH TESSERACT (OBBLIGATORIO SU RENDER) ===
+# PATH TESSERACT SU RENDER
 pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 app = Flask(__name__)
@@ -13,32 +14,39 @@ app = Flask(__name__)
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        # Prende il file caricato
-        file = request.files.get("image")
-        if not file:
-            return "Nessun file caricato", 400
+        try:
+            file = request.files.get("image")
+            if not file:
+                return "❌ Nessun file ricevuto", 400
 
-        # Salva immagine temporanea
-        img_path = f"/tmp/{uuid.uuid4()}.png"
-        file.save(img_path)
+            # Salvataggio temporaneo
+            img_path = f"/tmp/{uuid.uuid4()}"
+            file.save(img_path)
 
-        # OCR in italiano
-        testo = pytesseract.image_to_string(
-            Image.open(img_path),
-            lang="ita"
-        )
+            # Apertura e NORMALIZZAZIONE immagine
+            img = Image.open(img_path)
+            img = img.convert("RGB")  # <-- QUESTO EVITA IL 500
 
-        # Crea Word
-        doc = Document()
-        doc.add_heading("Testo estratto dall'immagine", level=1)
-        doc.add_paragraph(testo)
+            # OCR
+            testo = pytesseract.image_to_string(img, lang="ita")
 
-        out_path = f"/tmp/{uuid.uuid4()}.docx"
-        doc.save(out_path)
+            # Creazione Word
+            doc = Document()
+            doc.add_heading("Testo estratto dall'immagine", level=1)
+            doc.add_paragraph(testo if testo.strip() else "[Nessun testo rilevato]")
 
-        return send_file(out_path, as_attachment=True)
+            out_path = f"/tmp/{uuid.uuid4()}.docx"
+            doc.save(out_path)
 
-    # HTML INLINE (ZERO TEMPLATE, ZERO ERRORI)
+            return send_file(out_path, as_attachment=True)
+
+        except Exception as e:
+            # LOG VERO (visibile nei log Render)
+            print("🔥 ERRORE OCR 🔥")
+            print(traceback.format_exc())
+            return "Errore interno durante la trascrizione. Controlla i log.", 500
+
+    # PAGINA HTML INLINE
     return """
     <!doctype html>
     <html lang="it">
@@ -57,7 +65,7 @@ def index():
     ">
         <form method="POST" enctype="multipart/form-data">
             <h2>Foto → Word OCR</h2>
-            <input type="file" name="image" required>
+            <input type="file" name="image" accept="image/*" required>
             <br><br>
             <button type="submit">Trascrivi e scarica Word</button>
         </form>
