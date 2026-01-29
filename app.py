@@ -129,7 +129,7 @@ button{flex:1;padding:16px;border-radius:12px;border:none;font-weight:700;font-s
 <form method="POST" enctype="multipart/form-data">
 
 <div class="section">
-<div class="section-title">DATI ANAGRAFICI (MANUALI)</div>
+<div class="section-title">DATI ANAGRAFICI (Open Source Intelligence)</div>
 <div class="grid">
 <input name="nome" placeholder="Nome e Cognome" value="{{data.nome}}">
 <input name="cf" placeholder="Codice Fiscale" value="{{data.cf}}">
