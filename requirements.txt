@@ -1,5 +1,0 @@
-flask
-pytesseract
-pillow
-python-docx
-gunicorn
